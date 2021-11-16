@@ -35,7 +35,7 @@ export default function CreateAccount({ setPopUp }) {
 					name: "",
 					password: "",
 				});
-				history.push("/account");
+				history.push("/new-account");
 			} catch (err) {
 				console.log("an errr==>>", err);
 			}
