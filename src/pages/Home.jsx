@@ -1,10 +1,10 @@
 import React from "react";
-import wallet from "../svg/wallet.svg";
+import lake from "../svg/lake.jpg";
 
 export default function Home() {
 	return (
 		<div className="center flex mx-12 text-center p-4 m-12 bg-orange-100 w-3/4 justify-items-center">
-			<img className="w-1/2 max-h-60 p-3" src={wallet} alt="A wallet" />
+			<img className="w-1/2 max-h-60 p-3" src={lake} alt="A wallet" />
 
 			<div className="w-1/2 flex flex-col min-h-1/2-space-y-3 text-center">
 				<h1 className="font-bold text-xl text-center">

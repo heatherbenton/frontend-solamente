@@ -1,18 +1,77 @@
 import { useFormik } from "formik";
-import React from "react";
-import useUsers from "../store/users";
+import React, { useEffect, useState } from "react";
+/// import useUsers from "../store/users";
 
 export default function PageCard({ action }) {
-	const users = useUsers((state) => state.users);
-	const changeBalance = useUsers((state) => state.changeBalance);
+	const [accounts, setAccounts] = useState([]);
+	const [userProfile, setUserProfile] = useState(null);
+
+	useEffect(() => {
+		(async () => {
+			try {
+				let accounts = await fetch(
+					`${process.env.REACT_APP_API_URL}/account/all`,
+					{
+						headers: {
+							jwt: localStorage.getItem("token"),
+						},
+					}
+				);
+				accounts = await accounts.json();
+				setAccounts(accounts);
+			} catch (err) {
+				console.log("an error==>>", err);
+			}
+		})();
+	}, []);
+
+	useEffect(() => {
+		(async () => {
+			try {
+				let profile = await fetch(`${process.env.REACT_APP_API_URL}/profile`, {
+					headers: {
+						jwt: localStorage.getItem("token"),
+					},
+				});
+				profile = await profile.json();
+				setUserProfile(profile);
+			} catch (err) {
+				console.log("an error==>>", err);
+			}
+		})();
+	}, []);
+
+	// const users = useUsers((state) => state.users);
+
+	/// const changeBalance = useUsers((state) => state.changeBalance);
 
 	const formik = useFormik({
 		initialValues: {
 			amount: 0,
-			userEmail: "",
+			acctNo: "",
 		},
 		onSubmit: () => handleSubmit(),
 	});
+
+	const changeBal = async (acctNo, amount, action) => {
+		if (action === "Withdraw") amount = amount * -1;
+		try {
+			let updatedAcct = await fetch(
+				`${process.env.REACT_APP_API_URL}/account/change_balance`,
+				{
+					method: "post",
+					body: JSON.stringify({ acctNo, amount }),
+					headers: {
+						jwt: localStorage.getItem("token"),
+						"content-type": "application/json",
+					},
+				}
+			);
+			await updatedAcct.json();
+		} catch (err) {
+			console.log("an error==>>", err);
+		}
+	};
 
 	const handleSubmit = () => {
 		if (isNaN(formik.values.amount) === true) {
@@ -25,24 +84,20 @@ export default function PageCard({ action }) {
 			return;
 		}
 
-		let user = users.find((user) => user.email === formik.values.userEmail);
-		if (!user) {
+		// 		let user = users.find((user) => user.email === formik.values.userEmail);
+		if (!userProfile) {
 			alert("invalid credentials");
 			return;
 		}
 
 		if (action === "Withdraw") {
-			if (formik.values.amount > user.balance) {
+			if (formik.values.amount > userProfile.balance) {
 				alert("transaction invalid");
 				return;
 			}
 		}
 
-		changeBalance(
-			formik.values.userEmail,
-			formik.values.amount,
-			action === "Deposit" ? false : true
-		);
+		changeBal(formik.values.acctNo, formik.values.amount, action);
 		alert("Success!");
 	};
 
@@ -56,13 +111,20 @@ export default function PageCard({ action }) {
 					{action}
 				</h3>
 				<div className="flex flex-col">
-					<label htmlFor="User Email">User Email</label>
-					<input
-						type="email"
-						id="userEmail"
+					<label htmlFor="acctNo">Acct Number</label>
+					<select
+						type="number"
+						id="acctNo"
 						onChange={formik.handleChange}
-						value={formik.values.userEmail}
-					/>
+						value={formik.values.acctNo}
+					>
+						<option value="">Select Acct No</option>
+						{accounts.map((acct, i) => (
+							<option key={i} value={acct.acctNo}>
+								{acct.acctNo}
+							</option>
+						))}
+					</select>
 				</div>
 
 				<div className="flex flex-col">
@@ -79,7 +141,7 @@ export default function PageCard({ action }) {
 				<button
 					type="submit"
 					disabled={!formik.values.amount}
-					className={`rounded bg-cyan-700 py-2 font-semibold ${
+					className={`rounded bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-700 hover:to-emerald-400 ... py-2 font-semibold ${
 						!formik.values.amount && "text-gray-50"
 					}`}
 				>
