@@ -23,6 +23,7 @@ export default function CreateAccount({ setPopUp }) {
 					},
 					body: JSON.stringify({ name, email, password }),
 				});
+				if (!token.ok)  return Promise.reject(token)
 				token = await token.json();
 				localStorage.setItem("token", token);
 				addUser({
@@ -37,7 +38,7 @@ export default function CreateAccount({ setPopUp }) {
 				});
 				history.push("/new-account");
 			} catch (err) {
-				console.log("an errr==>>", err);
+				console.log("an error occurred==>>", JSON.stringify(err.body));
 			}
 		},
 	});
