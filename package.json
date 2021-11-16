@@ -22,7 +22,8 @@
     "zustand": "^3.6.5"
   },
   "scripts": {
-    "start": "craco start",
+    "dev": "craco start",
+    "start": "node server.js",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
